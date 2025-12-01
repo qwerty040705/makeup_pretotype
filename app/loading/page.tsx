@@ -2,23 +2,24 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function LoadingPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  // ?to=/reserve 이런 식으로 들어온 값
-  const target = searchParams.get("to") || "/";
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // 🔍 현재 URL에서 ?to=/reserve 같은 쿼리 파라미터 직접 파싱
+    const search = new URLSearchParams(window.location.search);
+    const target = search.get("to") || "/";
+
     const timer = setTimeout(() => {
-      // 🔥 push → replace 로 변경해서 히스토리에 /loading이 안 남도록 처리
-      router.replace(target);
+      router.push(target);
     }, 700); // 0.7초 후 원하는 페이지로 이동
 
     return () => clearTimeout(timer);
-  }, [router, target]);
+  }, [router]);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900 flex items-center justify-center px-4">
