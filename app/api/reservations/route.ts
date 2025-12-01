@@ -82,8 +82,13 @@ export async function POST(req: Request) {
 ${message || "(없음)"}
 `;
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
-    const logoUrl = baseUrl ? `${baseUrl}/logo.jpg` : "";
+    const baseUrl =
+      (process.env.NEXT_PUBLIC_BASE_URL || "https://ten9-inky.vercel.app").replace(
+        /\/$/,
+      ""
+      );
+
+    const logoUrl = `${baseUrl}/logo.jpg`;
 
     // ───────────────── 고객용 HTML 메일 ─────────────────
     const userHtml = `<!DOCTYPE html>
