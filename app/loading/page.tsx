@@ -15,7 +15,7 @@ export default function LoadingPage() {
     const target = search.get("to") || "/";
 
     const timer = setTimeout(() => {
-      router.push(target);
+      router.replace(target);
     }, 700); // 0.7초 후 원하는 페이지로 이동
 
     return () => clearTimeout(timer);

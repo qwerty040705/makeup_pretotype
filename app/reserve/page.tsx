@@ -15,6 +15,29 @@ export default function ReservePage() {
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
 
+  // 💄 가격/시간 계산을 위한 상수
+  const BASE_PRICE = 9900;
+  const ADDON_PRICE = 4900;
+  const BASE_MINUTES = 10;
+  const ADDON_MINUTES = 5;
+
+  // 추가 옵션 선택 상태 (눈, 쉐딩)
+  const [addons, setAddons] = useState<{ eyes: boolean; shading: boolean }>({
+    eyes: false,
+    shading: false,
+  });
+
+  // 시간 선택 상태 (예상 종료 시간 계산용)
+  const [timeState, setTimeState] = useState<{
+    ampm: string;
+    hour: string;
+    minute: string;
+  }>({
+    ampm: "오후",
+    hour: "",
+    minute: "",
+  });
+
   const openDatePicker = () => {
     const input = dateInputRef.current;
     if (!input) return;
@@ -25,6 +48,51 @@ export default function ReservePage() {
       input.focus();
     }
   };
+
+  // 시작/끝 시각 계산 함수
+  const computeEndTime = (
+    ampm: string,
+    hourStr: string,
+    minuteStr: string,
+    durationMinutes: number
+  ) => {
+    const hNum = parseInt(hourStr, 10);
+    const mNum = parseInt(minuteStr, 10);
+    if (Number.isNaN(hNum) || Number.isNaN(mNum)) return null;
+
+    // 12시간제 → 24시간제
+    let h24 = hNum % 12;
+    if (ampm === "오후") {
+      h24 += 12;
+    }
+
+    const startTotal = h24 * 60 + mNum;
+    const endTotal = (startTotal + durationMinutes) % (24 * 60);
+
+    const pad = (n: number) => n.toString().padStart(2, "0");
+
+    const startLabel = `${pad(h24)}:${pad(mNum)}`;
+    const endHour = Math.floor(endTotal / 60);
+    const endMinute = endTotal % 60;
+    const endLabel = `${pad(endHour)}:${pad(endMinute)}`;
+
+    return { startLabel, endLabel };
+  };
+
+  // 현재 선택 기준 예상 가격/시간 계산
+  const addOnCount = (addons.eyes ? 1 : 0) + (addons.shading ? 1 : 0);
+  const totalPrice = BASE_PRICE + ADDON_PRICE * addOnCount;
+  const totalMinutes = BASE_MINUTES + ADDON_MINUTES * addOnCount;
+
+  const timeInfo =
+    timeState.hour && timeState.minute
+      ? computeEndTime(
+          timeState.ampm,
+          timeState.hour,
+          timeState.minute,
+          totalMinutes
+        )
+      : null;
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -55,18 +123,44 @@ export default function ReservePage() {
     const time = `${timeAmpm} ${timeHour}:${timeMinute}`;
 
     const gender = (formData.get("gender") || "").toString();
+    const ageGroup = (formData.get("ageGroup") || "").toString();
+
+    // 추가 옵션 여부 (눈 / 쉐딩)
+    const addEyes = formData.get("addonEyes") != null;
+    const addShading = formData.get("addonShading") != null;
+
+    const addOnCountLocal = (addEyes ? 1 : 0) + (addShading ? 1 : 0);
+    const totalPriceLocal = BASE_PRICE + ADDON_PRICE * addOnCountLocal;
+    const totalMinutesLocal = BASE_MINUTES + ADDON_MINUTES * addOnCountLocal;
+
+    // DB/메일용 옵션 리스트 (컴팩트 기본 + 추가 옵션)
+    const areas: string[] = ["compact"];
+    if (addEyes) areas.push("eyes");
+    if (addShading) areas.push("shading");
+
+    const timeDetail =
+      timeHour && timeMinute
+        ? computeEndTime(timeAmpm, timeHour, timeMinute, totalMinutesLocal)
+        : null;
 
     const data = {
       name: formData.get("name"),
       email: formData.get("email"),
-      phone: formData.get("phone"),
       gender,
+      ageGroup,
       date: formData.get("date"),
       time,
-      areas: formData.getAll("areas"),
+      areas,
       purpose: formData.get("purpose"),
       message: formData.get("message"),
-      // ※ agreeTerms / agreePrivacy 는 서버로 굳이 보내지 않고, 프론트 검증용으로만 사용
+      // 가격/시간 정보 (서버 저장용)
+      basePrice: BASE_PRICE,
+      addOnPrice: ADDON_PRICE,
+      totalPrice: totalPriceLocal,
+      totalMinutes: totalMinutesLocal,
+      addEyes,
+      addShading,
+      timeDetail,
     };
 
     try {
@@ -132,7 +226,7 @@ export default function ReservePage() {
 
         <p className="mb-1 text-xs text-zinc-400">
           아래 정보를 남겨주시면 예약 요청이 접수됩니다. 담당자가 확인 후,
-          남겨주신 이메일 또는 연락처로 일정 안내를 드립니다.
+          남겨주신 이메일로 일정 안내를 드립니다.
         </p>
         <p className="mb-4 text-[11px] text-zinc-500">
           예약 정보 수정이나 페이지 개선에 대한 의견이 있으시면{" "}
@@ -149,10 +243,10 @@ export default function ReservePage() {
         >
           {/* 기본 정보 */}
           <div className="space-y-2">
-            <h2 className="text-sm font-semibold text-zinc-200">기본 정보</h2>
+            <h2 className="text-base font-semibold text-zinc-200">기본 정보</h2>
 
             <div className="space-y-1">
-              <label className="text-xs text-zinc-300" htmlFor="name">
+              <label className="text-sm text-zinc-300" htmlFor="name">
                 이름
               </label>
               <input
@@ -166,7 +260,7 @@ export default function ReservePage() {
 
             {/* 성별 */}
             <div className="space-y-1">
-              <span className="text-xs text-zinc-300">성별</span>
+              <span className="text-sm text-zinc-300">성별</span>
               <div className="flex flex-wrap gap-2 text-xs text-zinc-100">
                 <label className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2">
                   <input
@@ -187,21 +281,12 @@ export default function ReservePage() {
                   />
                   <span>남성</span>
                 </label>
-                <label className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="other"
-                    className="h-3 w-3 accent-pink-500"
-                  />
-                  <span>기타 / 선택 안함</span>
-                </label>
               </div>
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs text-zinc-300" htmlFor="email">
-                이메일
+              <label className="text-sm text-zinc-300" htmlFor="email">
+                이메일 (입력하신 이메일로 예약 정보를 보내드려요.)
               </label>
               <input
                 id="email"
@@ -212,28 +297,18 @@ export default function ReservePage() {
                 placeholder="example@email.com"
               />
             </div>
-
-            <div className="space-y-1">
-              <label className="text-xs text-zinc-300" htmlFor="phone">
-                전화번호
-              </label>
-              <input
-                id="phone"
-                name="phone"
-                required
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-50 outline-none ring-pink-500/60 focus:border-pink-500 focus:ring-2"
-                placeholder="010-0000-0000"
-              />
-            </div>
           </div>
+
+          {/* 섹션 구분선 */}
+          <div className="my-4 h-0.5 bg-pink-600/30" />
 
           {/* 날짜 / 시간 */}
           <div className="space-y-2">
-            <h2 className="text-sm font-semibold text-zinc-200">희망 일정</h2>
+            <h2 className="text-base font-semibold text-zinc-200">희망 일정</h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {/* 날짜 */}
               <div className="space-y-1">
-                <label className="text-xs text-zinc-300" htmlFor="date">
+                <label className="text-sm text-zinc-300" htmlFor="date">
                   날짜
                 </label>
                 <input
@@ -249,7 +324,7 @@ export default function ReservePage() {
 
               {/* 시간 */}
               <div className="space-y-1">
-                <label className="text-xs text-zinc-300">시간</label>
+                <label className="text-sm text-zinc-300">시간</label>
 
                 <div className="flex items-stretch rounded-xl border border-zinc-500 bg-zinc-800 px-2 py-1 text-xs text-zinc-100">
                   {/* 오전/오후 */}
@@ -258,6 +333,12 @@ export default function ReservePage() {
                     required
                     className="bg-transparent px-1 py-1 outline-none border-none focus:ring-0 focus:outline-none"
                     defaultValue="오후"
+                    onChange={(e) =>
+                      setTimeState((prev) => ({
+                        ...prev,
+                        ampm: e.target.value,
+                      }))
+                    }
                   >
                     <option value="오전">오전</option>
                     <option value="오후">오후</option>
@@ -271,6 +352,12 @@ export default function ReservePage() {
                     required
                     className="bg-transparent px-1 py-1 outline-none border-none focus:ring-0 focus:outline-none"
                     defaultValue=""
+                    onChange={(e) =>
+                      setTimeState((prev) => ({
+                        ...prev,
+                        hour: e.target.value,
+                      }))
+                    }
                   >
                     <option value="" disabled>
                       시
@@ -290,6 +377,12 @@ export default function ReservePage() {
                     required
                     className="w-16 bg-transparent px-1 py-1 outline-none border-none focus:ring-0 focus:outline-none"
                     defaultValue=""
+                    onChange={(e) =>
+                      setTimeState((prev) => ({
+                        ...prev,
+                        minute: e.target.value,
+                      }))
+                    }
                   >
                     <option value="" disabled>
                       분
@@ -318,89 +411,204 @@ export default function ReservePage() {
             </div>
           </div>
 
-          {/* 시술 부위 선택 */}
+          {/* 섹션 구분선 */}
+          <div className="my-4 h-0.5 bg-pink-600/30" />
+
+          {/* 시술 옵션 선택 */}
           <div className="space-y-2">
-            <h2 className="text-sm font-semibold text-zinc-200">
+            <h2 className="text-base font-semibold text-zinc-200">
               어느 부위를 중심으로 메이크업 받고 싶으신가요?
             </h2>
             <p className="text-[11px] text-zinc-400">
-              여러 부위를 함께 선택하실 수 있습니다.
+              컴팩트 메이크업(피부, 눈썹, 입술)은 기본 포함이며, 아래에서
+              눈/쉐딩을 추가로 선택하실 수 있어요.
             </p>
-            <div className="grid grid-cols-2 gap-2 text-xs text-zinc-100">
-              <label className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2">
-                <input
-                  type="checkbox"
-                  name="areas"
-                  value="눈 메이크업"
-                  className="h-3 w-3 accent-pink-500"
-                />
-                <span>눈 메이크업</span>
-              </label>
-              <label className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2">
-                <input
-                  type="checkbox"
-                  name="areas"
-                  value="코 / 쉐딩"
-                  className="h-3 w-3 accent-pink-500"
-                />
-                <span>코 / 쉐딩</span>
-              </label>
-              <label className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2">
-                <input
-                  type="checkbox"
-                  name="areas"
-                  value="입술"
-                  className="h-3 w-3 accent-pink-500"
-                />
-                <span>입술</span>
-              </label>
-              <label className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2">
-                <input
-                  type="checkbox"
-                  name="areas"
-                  value="피부 / 전체 베이스"
-                  className="h-3 w-3 accent-pink-500"
-                />
-                <span>피부 / 전체 베이스</span>
-              </label>
-              <label className="col-span-2 flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2">
-                <input
-                  type="checkbox"
-                  name="areas"
-                  value="기타 (추가 내용 참조)"
-                  className="h-3 w-3 accent-pink-500"
-                />
-                <span>기타 (추가 내용에 적어주세요)</span>
-              </label>
+
+            <div className="space-y-2 text-xs text-zinc-100">
+              {/* 기본 컴팩트 메이크업 (항상 포함) */}
+              <div className="flex items-center justify-between rounded-xl border border-pink-500/60 bg-pink-950/40 px-3 py-2">
+                <div className="flex flex-col">
+                  <span className="font-semibold text-pink-200">
+                    컴팩트 메이크업 (기본)
+                  </span>
+                  <span className="text-[11px] text-zinc-300">
+                    피부, 눈썹, 입술 중심의 10분 퀵 메이크업
+                  </span>
+                </div>
+                <div className="text-right text-[11px] text-pink-100">
+                  <div>10분</div>
+                  <div className="font-semibold">
+                    {BASE_PRICE.toLocaleString("ko-KR")}원
+                  </div>
+                </div>
+              </div>
+
+              {/* 추가 옵션 */}
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <label className="flex items-center justify-between gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      name="addonEyes"
+                      value="eyes"
+                      className="h-3 w-3 accent-pink-500"
+                      onChange={(e) =>
+                        setAddons((prev) => ({
+                          ...prev,
+                          eyes: e.target.checked,
+                        }))
+                      }
+                    />
+                    <div className="flex flex-col">
+                      <span>눈 메이크업 추가</span>
+                      <span className="text-[10px] text-zinc-400">
+                        포인트 컬러 / 음영, 또렷한 눈매 연출
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right text-[11px] text-zinc-300">
+                    <div>+5분</div>
+                    <div className="font-semibold">
+                      +{ADDON_PRICE.toLocaleString("ko-KR")}원
+                    </div>
+                  </div>
+                </label>
+
+                <label className="flex items-center justify-between gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      name="addonShading"
+                      value="shading"
+                      className="h-3 w-3 accent-pink-500"
+                      onChange={(e) =>
+                        setAddons((prev) => ({
+                          ...prev,
+                          shading: e.target.checked,
+                        }))
+                      }
+                    />
+                    <div className="flex flex-col">
+                      <span>코 / 쉐딩 추가</span>
+                      <span className="text-[10px] text-zinc-400">
+                        얼굴 윤곽/코 쉐이딩으로 입체감 보완
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right text-[11px] text-zinc-300">
+                    <div>+5분</div>
+                    <div className="font-semibold">
+                      +{ADDON_PRICE.toLocaleString("ko-KR")}원
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* ✅ 이동된 예상 소요시간 / 금액 표시 박스 */}
+            <div className="mt-2 rounded-xl border border-pink-500/40 bg-pink-500/5 px-3 py-2 text-[11px] text-pink-100">
+              {timeInfo ? (
+                <>
+                  <p>
+                    예상 소요 시간:{" "}
+                    <span className="font-semibold">
+                      {timeInfo.startLabel} ~ {timeInfo.endLabel}
+                    </span>{" "}
+                    (총 {totalMinutes}분)
+                  </p>
+                  <p className="mt-1">
+                    예상 금액:{" "}
+                    <span className="font-semibold">
+                      {totalPrice.toLocaleString("ko-KR")}원
+                    </span>{" "}
+                    (기본 9,900원 + 추가 옵션)
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>
+                    위에서 옵션과 희망 시간을 선택하면{" "}
+                    <span className="font-semibold">
+                      예상 소요 시간과 금액
+                    </span>
+                    이 표시됩니다.
+                  </p>
+                  <p className="mt-1 text-pink-200/80">
+                    기본 10분 / 9,900원, 옵션 1개당 +5분 / +4,900원입니다.
+                  </p>
+                </>
+              )}
             </div>
           </div>
 
-          {/* 용도 선택 */}
-          <div className="space-y-2">
-            <h2 className="text-sm font-semibold text-zinc-200">
-              어떤 용도의 메이크업인가요?
-            </h2>
-            <select
-              name="purpose"
-              required
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-50 outline-none ring-pink-500/60 focus:border-pink-500 focus:ring-2"
-              defaultValue=""
-            >
-              <option value="" disabled>
-                선택해주세요
-              </option>
-              <option value="introdate">소개팅</option>
-              <option value="meeting">중요한 미팅</option>
-              <option value="presentation">발표 / PT</option>
-              <option value="interview">면접</option>
-              <option value="daily">데일리 일정</option>
-              <option value="etc">기타</option>
-            </select>
+          {/* 섹션 구분선 */}
+          <div className="my-4 h-0.5 bg-pink-600/30" />
+
+          {/* ⭐ 스타일링 섹션 */}
+          <div className="space-y-3">
+            <h2 className="text-base font-semibold text-zinc-200">스타일링</h2>
+
+            {/* 설명 문구 */}
+            <p className="text-[11px] text-zinc-400">
+              나이대와 어떤 용도인지 알려주시면, 고객님께 어울리는 메이크업을
+              빠르게 미리 준비해둘 수 있어요!
+            </p>
+
+            {/* 용도 */}
+            <div className="space-y-1">
+              <label className="text-sm text-zinc-300">
+                어떤 용도의 메이크업인가요?
+              </label>
+              <select
+                name="purpose"
+                required
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 
+                 text-sm text-zinc-50 outline-none ring-pink-500/60 
+                 focus:border-pink-500 focus:ring-2"
+                defaultValue=""
+              >
+                <option value="" disabled>
+                  선택해주세요
+                </option>
+                <option value="meeting">중요한 업무미팅 / 발표</option>
+                <option value="introdate">소개팅</option>
+                <option value="daily">데일리 일정</option>
+                <option value="other">가타</option>
+              </select>
+            </div>
+
+            {/* 나이대 */}
+            <div className="space-y-1">
+              <label className="text-sm text-zinc-300">나이대</label>
+              <select
+                id="ageGroup"
+                name="ageGroup"
+                required
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 
+                           text-sm text-zinc-50 outline-none ring-pink-500/60 
+                           focus:border-pink-500 focus:ring-2"
+                defaultValue=""
+              >
+                <option value="" disabled>
+                  선택해주세요
+                </option>
+                <option value="10s-late">10대 후반</option>
+                <option value="20s-early">20대 초반</option>
+                <option value="20s-mid">20대 중반</option>
+                <option value="20s-late">20대 후반</option>
+                <option value="30s-early">30대 초반</option>
+                <option value="30s-mid">30대 중반</option>
+                <option value="others">기타</option>
+              </select>
+            </div>
           </div>
+
+          {/* 섹션 구분선 */}
+          <div className="my-4 h-0.5 bg-pink-600/30" />
 
           {/* 기타 요청 사항 */}
           <div className="space-y-1">
-            <label className="text-xs text-zinc-300" htmlFor="message">
+            <label className="text-sm text-zinc-300" htmlFor="message">
               추가로 남기고 싶은 내용
             </label>
             <textarea
@@ -423,13 +631,13 @@ export default function ReservePage() {
 
             <div className="space-y-2 text-[11px] text-zinc-300">
               {/* 이용약관 동의 */}
-              <div className="flex items-start gap-2">
+              <div className="flex items-start gap-3">
                 <input
                   type="checkbox"
                   id="agreeTerms"
                   name="agreeTerms"
                   required
-                  className="mt-1 h-3 w-3 accent-pink-500"
+                  className="mt-0 h-4 w-4 accent-pink-500"
                 />
                 <div className="flex-1">
                   <label
@@ -451,13 +659,13 @@ export default function ReservePage() {
               </div>
 
               {/* 개인정보 처리 동의 */}
-              <div className="flex items-start gap-2">
+              <div className="flex items-start gap-3">
                 <input
                   type="checkbox"
                   id="agreePrivacy"
                   name="agreePrivacy"
                   required
-                  className="mt-1 h-3 w-3 accent-pink-500"
+                  className="mt-0 h-4 w-4 accent-pink-500"
                 />
                 <div className="flex-1">
                   <label
@@ -493,7 +701,7 @@ export default function ReservePage() {
           </button>
 
           <p className="text-[10px] text-zinc-500">
-            남겨주신 연락처는 예약 상담 및 일정 안내 용도로만 사용됩니다.
+            남겨주신 이메일은 예약 상담 및 일정 안내 용도로만 사용됩니다.
           </p>
         </form>
       </div>
@@ -570,8 +778,8 @@ export default function ReservePage() {
               <p className="mb-1">
                 1.{" "}
                 <span className="font-semibold">
-                  수집 항목: 이름, 이메일, 전화번호, 예약 희망일시, 시술 부위,
-                  용도, 추가 요청 사항
+                  수집 항목: 이름, 이메일, 성별, 나이대, 예약 희망일시, 선택한
+                  시술 옵션, 용도, 추가 요청 사항
                 </span>
               </p>
 
@@ -588,7 +796,7 @@ export default function ReservePage() {
 
               <p className="mb-1">
                 4. 제공: 예약 및 시술 진행을 위해 제휴 아티스트 또는 매장에
-                최소한의 정보(이름, 연락처, 예약 정보)가 제공될 수 있습니다.
+                최소한의 정보(이름, 이메일, 예약 정보)가 제공될 수 있습니다.
               </p>
 
               <p className="mt-2 text-zinc-400">
