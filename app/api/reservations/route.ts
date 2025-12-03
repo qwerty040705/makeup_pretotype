@@ -6,10 +6,20 @@ import clientPromise from "@/lib/mongodb";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, phone, date, time, areas, purpose, message } = body;
+    const {
+      name,
+      email,
+      phone,
+      gender,
+      date,
+      time,
+      areas,
+      purpose,
+      message,
+    } = body;
 
     // 필수값 체크
-    if (!name || !email || !phone || !date || !time || !purpose) {
+    if (!name || !email || !phone || !gender || !date || !time || !purpose) {
       return NextResponse.json(
         { error: "필수 항목이 누락되었습니다." },
         { status: 400 }
@@ -25,6 +35,7 @@ export async function POST(req: Request) {
       name,
       email,
       phone,
+      gender,
       date,
       time,
       areas,
@@ -52,10 +63,21 @@ export async function POST(req: Request) {
       },
     });
 
+    const areaLabelMap: Record<string, string> = {
+        eyes: "눈 메이크업",
+        nose: "코 / 쉐딩",
+        lips: "입술",
+        base: "피부 / 전체 베이스",
+        etc: "기타 (추가 내용 참조)",
+    };
+
     const areasText =
-      Array.isArray(areas) && areas.length > 0
-        ? (areas as string[]).join(", ")
+        Array.isArray(areas) && areas.length > 0
+            ? (areas as string[])
+                .map((a) => areaLabelMap[a] || a) // 모르는 값은 그대로
+                .join(", ")
         : "선택 없음";
+
 
     const purposeLabelMap: Record<string, string> = {
       introdate: "소개팅",
@@ -66,7 +88,14 @@ export async function POST(req: Request) {
       etc: "기타",
     };
 
+    const genderLabelMap: Record<string, string> = {
+      female: "여성",
+      male: "남성",
+      other: "기타 / 선택 안함",
+    };
+
     const purposeLabel = purposeLabelMap[purpose] || purpose;
+    const genderLabel = genderLabelMap[gender] || gender;
 
     const summaryText = `
 [10분 메이크업 예약 요청]
@@ -74,6 +103,7 @@ export async function POST(req: Request) {
 이름: ${name}
 이메일: ${email}
 전화번호: ${phone}
+성별: ${genderLabel}
 희망 날짜: ${date}
 희망 시간: ${time}
 시술 부위: ${areasText}
@@ -83,10 +113,8 @@ ${message || "(없음)"}
 `;
 
     const baseUrl =
-      (process.env.NEXT_PUBLIC_BASE_URL || "https://ten9-inky.vercel.app").replace(
-        /\/$/,
-      ""
-      );
+      (process.env.NEXT_PUBLIC_BASE_URL ||
+        "https://ten9-inky.vercel.app").replace(/\/$/, "");
 
     const logoUrl = `${baseUrl}/logo.jpg`;
 
@@ -161,6 +189,10 @@ ${message || "(없음)"}
                     <td style="padding:4px 0;">${phone}</td>
                   </tr>
                   <tr>
+                    <td width="80" style="color:#a1a1aa;padding:4px 0;">성별</td>
+                    <td style="padding:4px 0;">${genderLabel}</td>
+                  </tr>
+                  <tr>
                     <td width="80" style="color:#a1a1aa;padding:4px 0;">희망 일정</td>
                     <td style="padding:4px 0;">${date} · ${time}</td>
                   </tr>
@@ -228,6 +260,9 @@ ${message || "(없음)"}
       </tr>
       <tr>
         <td style="color:#6b7280;">전화번호</td><td>${phone}</td>
+      </tr>
+      <tr>
+        <td style="color:#6b7280;">성별</td><td>${genderLabel}</td>
       </tr>
       <tr>
         <td style="color:#6b7280;">희망 일정</td><td>${date} · ${time}</td>

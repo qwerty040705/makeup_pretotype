@@ -54,10 +54,13 @@ export default function ReservePage() {
     const timeMinute = (formData.get("timeMinute") || "").toString();
     const time = `${timeAmpm} ${timeHour}:${timeMinute}`;
 
+    const gender = (formData.get("gender") || "").toString();
+
     const data = {
       name: formData.get("name"),
       email: formData.get("email"),
       phone: formData.get("phone"),
+      gender,
       date: formData.get("date"),
       time,
       areas: formData.getAll("areas"),
@@ -161,6 +164,41 @@ export default function ReservePage() {
               />
             </div>
 
+            {/* 성별 */}
+            <div className="space-y-1">
+              <span className="text-xs text-zinc-300">성별</span>
+              <div className="flex flex-wrap gap-2 text-xs text-zinc-100">
+                <label className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2">
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="female"
+                    required
+                    className="h-3 w-3 accent-pink-500"
+                  />
+                  <span>여성</span>
+                </label>
+                <label className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2">
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="male"
+                    className="h-3 w-3 accent-pink-500"
+                  />
+                  <span>남성</span>
+                </label>
+                <label className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2">
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="other"
+                    className="h-3 w-3 accent-pink-500"
+                  />
+                  <span>기타 / 선택 안함</span>
+                </label>
+              </div>
+            </div>
+
             <div className="space-y-1">
               <label className="text-xs text-zinc-300" htmlFor="email">
                 이메일
@@ -250,7 +288,7 @@ export default function ReservePage() {
                   <select
                     name="timeMinute"
                     required
-                    className="flex-1 bg-transparent px-1 py-1 outline-none border-none focus:ring-0 focus:outline-none"
+                    className="w-16 bg-transparent px-1 py-1 outline-none border-none focus:ring-0 focus:outline-none"
                     defaultValue=""
                   >
                     <option value="" disabled>
@@ -293,7 +331,7 @@ export default function ReservePage() {
                 <input
                   type="checkbox"
                   name="areas"
-                  value="eyes"
+                  value="눈 메이크업"
                   className="h-3 w-3 accent-pink-500"
                 />
                 <span>눈 메이크업</span>
@@ -302,7 +340,7 @@ export default function ReservePage() {
                 <input
                   type="checkbox"
                   name="areas"
-                  value="nose"
+                  value="코 / 쉐딩"
                   className="h-3 w-3 accent-pink-500"
                 />
                 <span>코 / 쉐딩</span>
@@ -311,7 +349,7 @@ export default function ReservePage() {
                 <input
                   type="checkbox"
                   name="areas"
-                  value="lips"
+                  value="입술"
                   className="h-3 w-3 accent-pink-500"
                 />
                 <span>입술</span>
@@ -320,7 +358,7 @@ export default function ReservePage() {
                 <input
                   type="checkbox"
                   name="areas"
-                  value="base"
+                  value="피부 / 전체 베이스"
                   className="h-3 w-3 accent-pink-500"
                 />
                 <span>피부 / 전체 베이스</span>
@@ -329,7 +367,7 @@ export default function ReservePage() {
                 <input
                   type="checkbox"
                   name="areas"
-                  value="etc"
+                  value="기타 (추가 내용 참조)"
                   className="h-3 w-3 accent-pink-500"
                 />
                 <span>기타 (추가 내용에 적어주세요)</span>
@@ -507,7 +545,7 @@ export default function ReservePage() {
             <button
               type="button"
               onClick={() => setShowTerms(false)}
-              className="mt-3 w-full rounded-xl bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-500"
+              className="mt-3 w-full rounded-xl bg-pink-600 px-3 py-2 text-xs font-semibold text-white hover:bg-pink-500"
             >
               닫기
             </button>
@@ -567,7 +605,7 @@ export default function ReservePage() {
             <button
               type="button"
               onClick={() => setShowPrivacy(false)}
-              className="mt-3 w-full rounded-xl bg-sky-600 px-3 py-2 text-xs font-semibold text-white hover:bg-sky-500"
+              className="mt-3 w-full rounded-xl bg-pink-600 px-3 py-2 text-xs font-semibold text-white hover:bg-pink-500"
             >
               닫기
             </button>
