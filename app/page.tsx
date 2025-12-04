@@ -4,99 +4,16 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
 export default function Home() {
   const router = useRouter();
-  const [showHint, setShowHint] = useState(false);
 
   const goToReserve = () => {
     router.push("/loading?to=/reserve");
   };
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    let hideTimeout: any = null;
-    let scrollTimeout: any = null;
-
-    const triggerHint = () => {
-      setShowHint(true);
-      if (hideTimeout) clearTimeout(hideTimeout);
-      hideTimeout = setTimeout(() => {
-        setShowHint(false);
-      }, 1500);
-    };
-
-    // ✅ 첫 진입 시 한 번 보여주기
-    triggerHint();
-
-    // ✅ 스크롤이 멈췄을 때마다 다시 힌트 표시 (디바운스)
-    const handleScroll = () => {
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        triggerHint();
-      }, 500); // 스크롤 멈춘 후 0.5초 뒤에 힌트 표시
-    };
-
-    window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (hideTimeout) clearTimeout(hideTimeout);
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-    };
-  }, []);
-
   return (
     <main className="min-h-screen bg-gradient-to-b from-zinc-950 to-zinc-900">
-      {/* 🔔 예약 버튼 안내 오버레이 */}
-      {showHint && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-          {/* 어두워지는 배경 */}
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
-          {/* 안내 박스 */}
-          <div className="relative z-10 max-w-xs rounded-2xl bg-zinc-900/90 px-4 py-3 text-center shadow-xl shadow-black/60 hint-fade">
-            <p className="text-2xl sm:text-base font-extrabold text-pink-200">
-              <span className="text-pink-700">10분 메이크업 예약</span>
-              은
-              <br />
-              아래 <span className="text-pink-700">예약 버튼</span>을 눌러
-              <br />
-              진행해 주세요!
-            </p>
-            <div className="mt-1 text-2xl sm:text-3xl text-pink-400 font-black animate-bounce">
-              ↓
-            </div>
-          </div>
-
-          {/* styled-jsx로 페이드 애니메이션 */}
-          <style jsx>{`
-            .hint-fade {
-              animation: hintFade 0.1s ease-out forwards;
-            }
-            @keyframes hintFade {
-              0% {
-                opacity: 0;
-                transform: translateY(10px);
-              }
-              15% {
-                opacity: 1;
-                transform: translateY(0);
-              }
-              70% {
-                opacity: 1;
-                transform: translateY(0);
-              }
-              100% {
-                opacity: 0;
-                transform: translateY(6px);
-              }
-            }
-          `}</style>
-        </div>
-      )}
-
       <div className="mx-auto flex min-h-screen max-w-md flex-col px-4 py-8 sm:max-w-lg">
         {/* 헤더 / 타이틀 영역 */}
         <header className="mb-4">
@@ -147,7 +64,7 @@ export default function Home() {
           </p>
         </header>
 
-        {/* ✅ 여기 공백 위치에 CTA 버튼 섹션 추가 (위로 올림) */}
+        {/* ✅ 헤더 바로 아래 예약 버튼(위로 이동) */}
         <div className="mb-6">
           <button
             onClick={goToReserve}
@@ -304,8 +221,6 @@ export default function Home() {
             />
           </div>
         </section>
-
-        {/* ⛔️ 기존 하단 CTA는 위로 옮겼으므로 제거하고, 나머지 구조는 그대로 유지 */}
       </div>
     </main>
   );
