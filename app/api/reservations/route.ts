@@ -208,6 +208,31 @@ ${message || "(없음)"}
               </td>
             </tr>
 
+            <!-- 🙏 수요조사·댓글/좋아요·소문 관련 안내 -->
+            <tr>
+              <td style="padding-top:6px;padding-bottom:4px;">
+                <div style="border-radius:12px;background:#020617;padding:10px 12px;border:1px solid #27272a;color:#e5e5e5;font-size:12px;line-height:1.7;">
+                  <div style="font-weight:600;margin-bottom:4px;">🙏 부탁드리고 싶은 점</div>
+                  <ul style="margin:0;padding-left:18px;">
+                    <li style="margin-bottom:4px;">
+                      이번 페이지는 <strong>향후 실제 서비스 출시를 검토하기 위한 수요조사용 프리토타입(MVP)</strong>입니다.
+                      많은 분들이 관심을 보여주시면, <strong>정식 서비스로 출시</strong>하는 것을 진지하게 준비할 예정입니다. 🚀
+                    </li>
+                    <li style="margin-bottom:4px;">
+                      인스타그램에서 보신 <strong>TEN:9 관련 게시물/광고</strong>가 마음에 드셨다면,
+                      <strong>좋아요와 긍정적인 댓글</strong>을 남겨주시면 정말 큰 힘이 됩니다. 💗
+                    </li>
+                    <li>
+                      한편, 이 페이지가 <strong>수업용 테스트</strong>라는 점을 모르고
+                      다른 분들이 <strong>‘가짜 예약 사이트’, ‘사기 서비스’</strong>로 오해할 수 있어,
+                      SNS나 커뮤니티에 그런 식으로 소문을 내기보다는
+                      <strong>“수업용 실험 프로젝트”</strong>라는 점을 너그럽게 이해해 주시면 정말 감사하겠습니다. 🙏
+                    </li>
+                  </ul>
+                </div>
+              </td>
+            </tr>
+
             <tr>
               <td style="padding-top:6px;padding-bottom:8px;">
                 <div style="font-size:14px;font-weight:600;color:#f4f4f5;margin-bottom:4px;">
@@ -368,6 +393,14 @@ ${message || "(없음)"}
         "이 메일은 실제 미용 서비스 예약 안내가 아니라,\n" +
         "서울대학교 벤처경영학과 「창조와 혁신」 수업에서 진행 중인\n" +
         "TEN:9 퀵 메이크업 서비스 아이디어의 프리토타입(MVP) 테스트용 안내 메일입니다.\n\n" +
+        "이번 프로젝트가 좋은 반응을 얻으면, 향후 실제 서비스로 정식 출시하는 것을 진지하게 검토할 예정입니다.\n" +
+        "지금은 그 가능성을 확인하기 위한 일종의 수요조사 단계라고 봐주시면 됩니다. 🙌\n\n" +
+        "특히 인스타그램에서 보신 TEN:9 관련 게시물/광고가 마음에 드셨다면,\n" +
+        "해당 게시물에 좋아요와 긍정적인 댓글을 남겨주시면 정말 큰 힘이 됩니다. 💗\n\n" +
+        "다만, 이 페이지가 수업용 테스트라는 점을 모르고 다른 분들이\n" +
+        "‘가짜 예약 사이트’, ‘사기 서비스’로 오해할 수 있어,\n" +
+        "SNS나 커뮤니티에서 그런 식으로 소문을 내기보다는\n" +
+        "수업용 실험 프로젝트라는 점을 너그럽게 이해해 주시면 정말 감사하겠습니다. 🙏\n\n" +
         "따라서 아래 내용은 모두 ‘테스트용 입력 정보’이며,\n" +
         "실제 매장 예약, 시술, 결제, 방문 일정이 진행되지는 않습니다.\n\n" +
         "--- 프리토타입 페이지에서 남기신 내용 ---\n" +
