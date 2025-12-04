@@ -1,6 +1,5 @@
 // app/page.tsx
 
-
 "use client";
 
 import Image from "next/image";
@@ -24,7 +23,6 @@ export default function Home() {
     const triggerHint = () => {
       setShowHint(true);
       if (hideTimeout) clearTimeout(hideTimeout);
-      // 힌트는 약 2.2초 정도 보였다가 사라지게
       hideTimeout = setTimeout(() => {
         setShowHint(false);
       }, 1500);
@@ -60,10 +58,12 @@ export default function Home() {
           {/* 안내 박스 */}
           <div className="relative z-10 max-w-xs rounded-2xl bg-zinc-900/90 px-4 py-3 text-center shadow-xl shadow-black/60 hint-fade">
             <p className="text-2xl sm:text-base font-extrabold text-pink-200">
-              예약 버튼은{" "}
+              <span className="text-pink-700">10분 메이크업 예약</span>
+              은
               <br />
-              <span className="text-pink-700">페이지 맨 아래</span>
-              에 <br /> 있어요!
+              아래 <span className="text-pink-700">예약 버튼</span>을 눌러
+              <br />
+              진행해 주세요!
             </p>
             <div className="mt-1 text-2xl sm:text-3xl text-pink-400 font-black animate-bounce">
               ↓
@@ -73,7 +73,7 @@ export default function Home() {
           {/* styled-jsx로 페이드 애니메이션 */}
           <style jsx>{`
             .hint-fade {
-              animation: hintFade 1.5s ease-out forwards;
+              animation: hintFade 0.1s ease-out forwards;
             }
             @keyframes hintFade {
               0% {
@@ -99,7 +99,7 @@ export default function Home() {
 
       <div className="mx-auto flex min-h-screen max-w-md flex-col px-4 py-8 sm:max-w-lg">
         {/* 헤더 / 타이틀 영역 */}
-        <header className="mb-6">
+        <header className="mb-4">
           {/* 로고 + 브랜드 영역 */}
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -146,6 +146,19 @@ export default function Home() {
             하는 메이크업 서비스입니다.
           </p>
         </header>
+
+        {/* ✅ 여기 공백 위치에 CTA 버튼 섹션 추가 (위로 올림) */}
+        <div className="mb-6">
+          <button
+            onClick={goToReserve}
+            className="block w-full rounded-2xl bg-pink-500 px-4 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-pink-500/30 transition hover:bg-pink-400"
+          >
+            10분 메이크업 예약하기
+          </button>
+          <p className="mt-2 text-center text-[11px] text-zinc-500">
+            남겨주신 개인정보로 예약 확정 및 안내를 드립니다.
+          </p>
+        </div>
 
         {/* Before / After 강조 섹션 */}
         <section className="mb-8">
@@ -292,19 +305,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 하단 CTA 버튼 */}
-        <div className="mt-auto pt-4">
-          <button
-            onClick={goToReserve}
-            className="block w-full rounded-2xl bg-pink-500 px-4 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-pink-500/30 transition hover:bg-pink-400"
-          >
-            10분 메이크업 예약하기
-          </button>
-
-          <p className="mt-2 text-center text-[11px] text-zinc-500">
-            남겨주신 개인정보로 예약 확정 및 안내를 드립니다.
-          </p>
-        </div>
+        {/* ⛔️ 기존 하단 CTA는 위로 옮겼으므로 제거하고, 나머지 구조는 그대로 유지 */}
       </div>
     </main>
   );
