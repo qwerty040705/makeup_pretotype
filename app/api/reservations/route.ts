@@ -120,7 +120,7 @@ export async function POST(req: Request) {
       female: "여성",
       male: "남성",
     };
-
+ 
     const locationLabelMap: Record<string, string> = {
       "gangnam-11": "강남",
       "sinchon-1": "신촌",
