@@ -109,11 +109,12 @@ export default function ReservePage() {
     // 2) 데이터 읽기
     const formData = new FormData(form);
 
-    // (체크박스는 required 속성으로도 막히지만, 로직도 한 번 더 확인해줌)
-    const agreeTerms = formData.get("agreeTerms");
-    const agreePrivacy = formData.get("agreePrivacy");
-    if (!agreeTerms || !agreePrivacy) {
-      alert("이용약관과 개인정보 수집·이용에 모두 동의해주셔야 예약이 가능합니다.");
+    // 약관 + 개인정보 통합 동의 체크
+    const agreeAll = formData.get("agreeAll");
+    if (!agreeAll) {
+      alert(
+        "이용약관 및 개인정보 수집·이용에 동의해주셔야 예약이 가능합니다."
+      );
       return;
     }
 
@@ -123,7 +124,8 @@ export default function ReservePage() {
     const time = `${timeAmpm} ${timeHour}:${timeMinute}`;
 
     const gender = (formData.get("gender") || "").toString();
-    const ageGroup = (formData.get("ageGroup") || "").toString();
+    const purpose = (formData.get("purpose") || "").toString();
+    const location = (formData.get("location") || "").toString();
 
     // 추가 옵션 여부 (눈 / 쉐딩)
     const addEyes = formData.get("addonEyes") != null;
@@ -147,11 +149,11 @@ export default function ReservePage() {
       name: formData.get("name"),
       email: formData.get("email"),
       gender,
-      ageGroup,
       date: formData.get("date"),
       time,
+      location,
       areas,
-      purpose: formData.get("purpose"),
+      purpose,
       message: formData.get("message"),
       // 가격/시간 정보 (서버 저장용)
       basePrice: BASE_PRICE,
@@ -302,7 +304,7 @@ export default function ReservePage() {
           {/* 섹션 구분선 */}
           <div className="my-4 h-0.5 bg-pink-600/30" />
 
-          {/* 날짜 / 시간 */}
+          {/* 날짜 / 시간 / 위치 */}
           <div className="space-y-2">
             <h2 className="text-base font-semibold text-zinc-200">희망 일정</h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -409,6 +411,31 @@ export default function ReservePage() {
                 </div>
               </div>
             </div>
+
+            {/* 위치 선택 */}
+            <div className="space-y-1">
+              <label className="text-sm text-zinc-300">
+                어느 역에서 메이크업을 받고 싶으신가요?
+              </label>
+              <select
+                name="location"
+                required
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 
+                           text-sm text-zinc-50 outline-none ring-pink-500/60 
+                           focus:border-pink-500 focus:ring-2"
+                defaultValue=""
+              >
+                <option value="" disabled>
+                  선택해주세요
+                </option>
+                <option value="gangnam-11">강남</option>
+                <option value="sinchon-1">신촌</option>
+                <option value="konkuk-1">건대입구</option>
+              </select>
+              <p className="mt-1 text-[11px] text-zinc-500">
+                실제 매장은 각 출구에서 도보 5분 이내 위치로 배정될 예정입니다.
+              </p>
+            </div>
           </div>
 
           {/* 섹션 구분선 */}
@@ -505,7 +532,7 @@ export default function ReservePage() {
               </div>
             </div>
 
-            {/* ✅ 이동된 예상 소요시간 / 금액 표시 박스 */}
+            {/* ✅ 예상 소요시간 / 금액 표시 박스 */}
             <div className="mt-2 rounded-xl border border-pink-500/40 bg-pink-500/5 px-3 py-2 text-[11px] text-pink-100">
               {timeInfo ? (
                 <>
@@ -550,7 +577,7 @@ export default function ReservePage() {
 
             {/* 설명 문구 */}
             <p className="text-[11px] text-zinc-400">
-              나이대와 어떤 용도인지 알려주시면, 고객님께 어울리는 메이크업을
+              어떤 용도인지 알려주시면, 고객님께 어울리는 메이크업을
               빠르게 미리 준비해둘 수 있어요!
             </p>
 
@@ -573,32 +600,7 @@ export default function ReservePage() {
                 <option value="meeting">중요한 업무미팅 / 발표</option>
                 <option value="introdate">소개팅</option>
                 <option value="daily">데일리 일정</option>
-                <option value="other">가타</option>
-              </select>
-            </div>
-
-            {/* 나이대 */}
-            <div className="space-y-1">
-              <label className="text-sm text-zinc-300">나이대</label>
-              <select
-                id="ageGroup"
-                name="ageGroup"
-                required
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 
-                           text-sm text-zinc-50 outline-none ring-pink-500/60 
-                           focus:border-pink-500 focus:ring-2"
-                defaultValue=""
-              >
-                <option value="" disabled>
-                  선택해주세요
-                </option>
-                <option value="10s-late">10대 후반</option>
-                <option value="20s-early">20대 초반</option>
-                <option value="20s-mid">20대 중반</option>
-                <option value="20s-late">20대 후반</option>
-                <option value="30s-early">30대 초반</option>
-                <option value="30s-mid">30대 중반</option>
-                <option value="others">기타</option>
+                <option value="other">기타</option>
               </select>
             </div>
           </div>
@@ -626,27 +628,27 @@ export default function ReservePage() {
               이용약관 및 개인정보 수집·이용 동의
             </h2>
             <p className="text-[11px] text-zinc-400">
-              예약 요청을 위해 아래 필수 항목에 모두 동의해주셔야 합니다.
+              예약 요청을 위해 아래 필수 항목에 동의해주셔야 합니다.
             </p>
 
             <div className="space-y-2 text-[11px] text-zinc-300">
-              {/* 이용약관 동의 */}
+              {/* 통합 동의 체크박스 */}
               <div className="flex items-start gap-3">
                 <input
                   type="checkbox"
-                  id="agreeTerms"
-                  name="agreeTerms"
+                  id="agreeAll"
+                  name="agreeAll"
                   required
                   className="mt-0 h-4 w-4 accent-pink-500"
                 />
                 <div className="flex-1">
                   <label
-                    htmlFor="agreeTerms"
+                    htmlFor="agreeAll"
                     className="font-medium text-zinc-100"
                   >
-                    [필수] 서비스 이용약관에 동의합니다.
+                    [필수] 이용약관 및 개인정보 수집·이용에 모두 동의합니다.
                   </label>
-                  <div className="mt-1">
+                  <div className="mt-1 flex flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={() => setShowTerms(true)}
@@ -654,27 +656,6 @@ export default function ReservePage() {
                     >
                       이용약관 보기
                     </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* 개인정보 처리 동의 */}
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  id="agreePrivacy"
-                  name="agreePrivacy"
-                  required
-                  className="mt-0 h-4 w-4 accent-pink-500"
-                />
-                <div className="flex-1">
-                  <label
-                    htmlFor="agreePrivacy"
-                    className="font-medium text-zinc-100"
-                  >
-                    [필수] 개인정보 수집·이용에 동의합니다.
-                  </label>
-                  <div className="mt-1">
                     <button
                       type="button"
                       onClick={() => setShowPrivacy(true)}
@@ -778,8 +759,8 @@ export default function ReservePage() {
               <p className="mb-1">
                 1.{" "}
                 <span className="font-semibold">
-                  수집 항목: 이름, 이메일, 성별, 나이대, 예약 희망일시, 선택한
-                  시술 옵션, 용도, 추가 요청 사항
+                  수집 항목: 이름, 이메일, 성별, 예약 희망일시, 선택한
+                  시술 옵션, 희망 위치(역/출구), 용도, 추가 요청 사항
                 </span>
               </p>
 
@@ -796,7 +777,8 @@ export default function ReservePage() {
 
               <p className="mb-1">
                 4. 제공: 예약 및 시술 진행을 위해 제휴 아티스트 또는 매장에
-                최소한의 정보(이름, 이메일, 예약 정보)가 제공될 수 있습니다.
+                최소한의 정보(이름, 이메일, 예약 정보, 희망 위치)가 제공될 수
+                있습니다.
               </p>
 
               <p className="mt-2 text-zinc-400">

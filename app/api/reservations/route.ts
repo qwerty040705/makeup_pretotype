@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       areas,
       purpose,
       message,
-      ageGroup,
+      location,
       basePrice,
       addOnPrice,
       totalPrice,
@@ -25,8 +25,16 @@ export async function POST(req: Request) {
       timeDetail,
     } = body;
 
-    // 필수값 체크 (전화번호 제거, 나이대 필수 추가)
-    if (!name || !email || !gender || !date || !time || !purpose || !ageGroup) {
+    // 필수값 체크 (나이대 제거, 위치(location) 필수 추가)
+    if (
+      !name ||
+      !email ||
+      !gender ||
+      !date ||
+      !time ||
+      !purpose ||
+      !location
+    ) {
       return NextResponse.json(
         { error: "필수 항목이 누락되었습니다." },
         { status: 400 }
@@ -35,7 +43,8 @@ export async function POST(req: Request) {
 
     // 숫자 필드 안전 처리
     const numericBasePrice = typeof basePrice === "number" ? basePrice : 9900;
-    const numericAddOnPrice = typeof addOnPrice === "number" ? addOnPrice : 4900;
+    const numericAddOnPrice =
+      typeof addOnPrice === "number" ? addOnPrice : 4900;
     const numericTotalPrice =
       typeof totalPrice === "number" ? totalPrice : numericBasePrice;
     const numericTotalMinutes =
@@ -50,9 +59,9 @@ export async function POST(req: Request) {
       name,
       email,
       gender,
-      ageGroup,
       date,
       time,
+      location,
       areas,
       purpose,
       message,
@@ -112,20 +121,15 @@ export async function POST(req: Request) {
       male: "남성",
     };
 
-    // 프론트에서 사용하는 value 기준
-    const ageGroupLabelMap: Record<string, string> = {
-      "10s-late": "10대 후반",
-      "20s-early": "20대 초반",
-      "20s-mid": "20대 중반",
-      "20s-late": "20대 후반",
-      "30s-early": "30대 초반",
-      "30s-mid": "30대 중반",
-      others: "기타",
+    const locationLabelMap: Record<string, string> = {
+      "gangnam-11": "강남",
+      "sinchon-1": "신촌",
+      "konkuk-1": "건대입구",
     };
 
     const purposeLabel = purposeLabelMap[purpose] || purpose;
     const genderLabel = genderLabelMap[gender] || gender;
-    const ageGroupLabel = ageGroupLabelMap[ageGroup] || ageGroup;
+    const locationLabel = locationLabelMap[location] || location;
 
     const timeRangeText =
       timeDetail && timeDetail.startLabel && timeDetail.endLabel
@@ -138,7 +142,7 @@ export async function POST(req: Request) {
 이름: ${name}
 이메일: ${email}
 성별: ${genderLabel}
-나이대: ${ageGroupLabel}
+희망 위치: ${locationLabel}
 희망 날짜: ${date}
 희망 시간: ${time}
 예상 소요 시간: ${timeRangeText} (약 ${numericTotalMinutes}분)
@@ -267,8 +271,8 @@ ${message || "(없음)"}
                     <td style="padding:4px 0;">${genderLabel}</td>
                   </tr>
                   <tr>
-                    <td width="80" style="color:#a1a1aa;padding:4px 0;">나이대</td>
-                    <td style="padding:4px 0;">${ageGroupLabel}</td>
+                    <td width="80" style="color:#a1a1aa;padding:4px 0;">희망 위치</td>
+                    <td style="padding:4px 0;">${locationLabel}</td>
                   </tr>
                   <tr>
                     <td width="80" style="color:#a1a1aa;padding:4px 0;">희망 일정</td>
@@ -353,7 +357,7 @@ ${message || "(없음)"}
         <td style="color:#6b7280;">성별</td><td>${genderLabel}</td>
       </tr>
       <tr>
-        <td style="color:#6b7280;">나이대</td><td>${ageGroupLabel}</td>
+        <td style="color:#6b7280;">희망 위치</td><td>${locationLabel}</td>
       </tr>
       <tr>
         <td style="color:#6b7280;">희망 일정</td><td>${date} · ${time}</td>

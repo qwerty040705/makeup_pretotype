@@ -5,6 +5,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+
 export default function Home() {
   const router = useRouter();
 
@@ -43,7 +44,7 @@ export default function Home() {
 
             {/* 위치/서비스 라벨 */}
             <span className="inline-flex flex-col rounded-full bg-pink-500/10 px-4 py-1 text-sm font-medium text-pink-300">
-              <span>강남역 내부상가</span>
+              <span>강남, 신촌, 건대입구</span>
               <span>퀵 메이크업</span>
             </span>
           </div>
@@ -202,25 +203,69 @@ export default function Home() {
         </section>
 
         {/* 지도 섹션 */}
-        <section className="mb-6 space-y-3">
-          <h2 className="text-sm font-semibold text-zinc-200">
-            위치 · 강남역 내부상가 (11번 출구 근처)
-          </h2>
-          <p className="text-xs text-zinc-400">
-            강남역 11번 출구 근처 내부상가에서 진행됩니다. 강남역(지하철)에서 나와
-            11번 출구 쪽으로 나오시면 TEN:9이 보입니다!
-          </p>
+        {/* 지도 섹션 */}
+<section className="mb-6 space-y-3">
+  <h2 className="text-sm font-semibold text-zinc-200">
+    위치 : 강남역, 신촌역, 건대입구 2호선에서 5분 거리
+  </h2>
+  <p className="text-xs text-zinc-400">
+    현재 TEN:9는 강남역, 신촌역, 건대입구역 인근 상가에
+    위치해 있습니다. 역에서 도보 5분 내 거리에 위치해 있습니다.
+  </p>
 
-          <div className="h-56 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900">
-            <iframe
-              title="강남역 11번 출구 위치"
-              src="https://www.google.com/maps?q=강남역+11번+출구&output=embed"
-              className="h-full w-full border-0"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          </div>
-        </section>
+  <div className="space-y-3">
+
+    {/* 강남역 */}
+    <div>
+      <p className="mb-1 text-[11px] font-medium text-zinc-400">
+        강남역 11번 출구 인근
+      </p>
+      <div className="h-40 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900">
+        <iframe
+          title="강남역 11번 출구 위치"
+          src="https://www.google.com/maps?q=강남역+11번+출구&output=embed"
+          className="h-full w-full border-0"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        />
+      </div>
+    </div>
+
+    {/* 신촌역 1번 출구 */}
+    <div>
+      <p className="mb-1 text-[11px] font-medium text-zinc-400">
+        신촌역 1번 출구 인근
+      </p>
+      <div className="h-40 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900">
+        <iframe
+          title="신촌역 1번 출구 위치"
+          src="https://www.google.com/maps?q=신촌역+1번+출구&output=embed"
+          className="h-full w-full border-0"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        />
+      </div>
+    </div>
+
+    {/* 건대입구역 1번 출구 */}
+    <div>
+      <p className="mb-1 text-[11px] font-medium text-zinc-400">
+        건대입구역 1번 출구 인근
+      </p>
+      <div className="h-40 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900">
+        <iframe
+          title="건대입구역 1번 출구 위치"
+          src="https://www.google.com/maps?q=건대입구역+1번+출구&output=embed"
+          className="h-full w-full border-0"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        />
+      </div>
+    </div>
+
+  </div>
+</section>
+
       </div>
     </main>
   );
